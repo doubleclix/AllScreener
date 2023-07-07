@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 
 class Program
@@ -34,6 +35,8 @@ class Program
             // Download the default, providing no date and get the option expirations
             string jsonData = client.DownloadString(apiUrl);
 
+            Delay();
+
             JObject json = JObject.Parse(jsonData);
 
 
@@ -59,6 +62,9 @@ class Program
         {
             // Download the default, providing no date and get the option expirations
             string jsonData = client.DownloadString(apiUrl);
+
+            Delay();
+            
 
             JObject json = JObject.Parse(jsonData);
 
@@ -88,6 +94,15 @@ class Program
         }
 
     }
+
+    /// <summary>
+    /// Performs a delay to avoid getting blocked accessing Yahoo finance data
+    /// </summary>
+    static void Delay()
+    {
+        Thread.Sleep(10);
+    }
+
 
     public class OptionChain
     {
