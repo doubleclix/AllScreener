@@ -11,12 +11,41 @@ class Program
 
         var expirationDates = GetExpirationDates(stockSymbol);
 
-        foreach (var expirationDate in expirationDates) 
-        { 
-            Console.WriteLine(expirationDate);
-        }
+        var chain = GetOptionChain(stockSymbol, expirationDates[5]);
+
     }
 
+
+    static OptionChain GetOptionChain(string symbol, DateTime expirationDate)
+    {
+        // dates are unix dates
+        DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        long date = (long)(expirationDate - unixEpoch).TotalSeconds;
+
+        // URL for the Yahoo Finance API
+        string apiUrl = $"https://query1.finance.yahoo.com/v7/finance/options/{symbol}?date={date}";
+
+        // Create a WebClient instance to make the HTTP request
+        WebClient client = new WebClient();
+
+        try
+        {
+            // Download the default, providing no date and get the option expirations
+            string jsonData = client.DownloadString(apiUrl);
+
+            JObject json = JObject.Parse(jsonData);
+
+
+            throw new NotImplementedException();
+        }
+        catch (WebException ex)
+        {
+            Console.WriteLine($"An error occurred getting option chain. {ex.Message}");
+            throw;
+        }
+
+    }
 
     static DateTime[] GetExpirationDates(string symbol)
     {
@@ -37,13 +66,17 @@ class Program
             JToken expirationDates = optionChain["expirationDates"];
 
             // dates are stored as unix dates
-            var intDates = expirationDates.ToObject<int[]>();
+            var intDates = expirationDates.ToObject<long[]>();
 
             List<DateTime> ret = new List<DateTime>();
 
             foreach (int i in intDates)
             {
-                ret.Add(DateTimeOffset.FromUnixTimeSeconds(i).Date);
+                DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+                DateTime date = unixEpoch.AddSeconds(i);
+
+                ret.Add(date);
             }
 
             return ret.ToArray();
@@ -53,6 +86,11 @@ class Program
             Console.WriteLine($"An error occurred getting expiration dates. {ex.Message}");
             throw;
         }
+
+    }
+
+    public class OptionChain
+    {
 
     }
 
