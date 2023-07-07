@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Security.Authentication.ExtendedProtection;
 using Newtonsoft.Json.Linq;
 
 class Program
@@ -39,8 +40,7 @@ class Program
 
             JObject json = JObject.Parse(jsonData);
 
-
-            throw new NotImplementedException();
+            return ParseChain(json);
         }
         catch (WebException ex)
         {
@@ -48,6 +48,28 @@ class Program
             throw;
         }
 
+    }
+
+    static OptionChain ParseChain(JObject json)
+    {
+        double stockBid = json["optionChain"]["result"][0]["quote"]["bid"].ToObject<double>();
+
+        List<OptionContract> calls = new List<OptionContract>();
+
+        var jsonCalls = json["optionChain"]["result"][0]["options"][0]["calls"];
+
+        foreach (var c in jsonCalls)
+        {
+            double strike = c["strike"].ToObject<double>();
+            double bid = c["bid"].ToObject<double>();
+            double ask = c["ask"].ToObject<double>();
+
+            calls.Add(new OptionContract() { Strike = strike, Bid = bid, Ask = ask });
+        }
+
+        OptionChain ret = new OptionChain() { StockBid = stockBid, Calls = calls.ToArray() };
+
+        return ret;
     }
 
     static DateTime[] GetExpirationDates(string symbol)
@@ -65,7 +87,6 @@ class Program
 
             Delay();
             
-
             JObject json = JObject.Parse(jsonData);
 
             JToken optionChain = json["optionChain"]["result"][0];
@@ -111,7 +132,19 @@ class Program
 
     public class OptionChain
     {
+        public double StockBid { get; set; }
 
+        public OptionContract[] Calls { get; set; }
+
+    }
+
+    public class OptionContract
+    {
+        public double Strike { get; set; }
+
+        public double Bid { get; set; }
+
+        public double Ask { get; set; }
     }
 
 }
