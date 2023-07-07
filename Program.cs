@@ -33,7 +33,7 @@ class Program
         try
         {
             // Download the default, providing no date and get the option expirations
-            string jsonData = client.DownloadString(apiUrl);
+            string jsonData = LoadJson(client, apiUrl);
 
             Delay();
 
@@ -61,7 +61,7 @@ class Program
         try
         {
             // Download the default, providing no date and get the option expirations
-            string jsonData = client.DownloadString(apiUrl);
+            string jsonData = LoadJson(client, apiUrl);
 
             Delay();
             
@@ -93,6 +93,11 @@ class Program
             throw;
         }
 
+    }
+
+    static string LoadJson(WebClient client, string apiUrl)
+    {
+        return client.DownloadString(apiUrl);
     }
 
     /// <summary>
